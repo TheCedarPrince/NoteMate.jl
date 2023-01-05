@@ -1,4 +1,7 @@
-function create_franklin_note(note::Note; date_format::String = "U d y")
+"""
+TODO: ADD DOCS
+"""
+function create_franklin_note(note::Note; date_format::String="U d y")
     title = note.title
     description = note.summary
     tags = note.keywords |> x -> replace(x, "#" => "") |> split .|> String
@@ -31,54 +34,96 @@ function create_franklin_note(note::Note; date_format::String = "U d y")
     )
 end
 
-function generate_franklin_template(note::FranklinNote)
 """
-@def title = "$(note.title)"
-@def slug = "$(note.slug)"
-@def tags = $(note.tags)
-@def description = "$(note.description)"
+TODO: ADD DOCS
+"""
+function generate_franklin_template(; title=nothing, slug=nothing, tags=nothing, description=nothing, rss_title=nothing, rss_description=nothing, rss_pubdate=nothing)
 
-@def rss_title = "$(note.rss_title)"
-@def rss_description = "$(note.rss_description)"
-@def rss_pubdate = Date$(note.rss_pubdate)
-"""
+    franklin_header = "+++\n"
+
+    if !isempty(title)
+        franklin_header = franklin_header * "title = \"$(title)\"\n"
+    end
+
+    if !isempty(slug)
+        franklin_header = franklin_header * "slug = \"$(slug)\"\n"
+    end
+
+    if !isempty(tags)
+        franklin_header = franklin_header * "tags = $(tags)\n"
+    end
+
+    if !isempty(description)
+        franklin_header = franklin_header * "description = \"$(description)\"\n"
+    end
+
+    if !isempty(rss_title)
+        franklin_header = franklin_header * "rss_title = \"$(rss_title)\"\n"
+    end
+
+    if !isempty(rss_description)
+        franklin_header = franklin_header * "rss_description = \"$(rss_description)\"\n"
+    end
+
+    if !isempty(rss_pubdate)
+        franklin_header = franklin_header * "rss_pubdate = Date$(rss_pubdate)\n"
+    end
+
+    franklin_header = franklin_header * "+++\n\n"
+
+    return franklin_header
 end
 
+"""
+TODO: ADD DOCS
+"""
 function generate_comments()
-"""
-## Discussion: 
+    """
+    ## Discussion: 
 
-{{ addcomments }}
-"""
+    {{ addcomments }}
+    """
 end
 
+"""
+TODO: ADD DOCS
+"""
 function generate_table_of_contents()
-"""
-\nTable of Contents\n=========\n\n\\toc\n
-"""
+    """
+    \nTable of Contents\n=========\n\n\\toc\n
+    """
 end
 
+"""
+TODO: ADD DOCS
+"""
 function generate_bibliography(note::FranklinNote)
     "\nBibliography\n==========\n\n" * note.bibliography
 end
 
-function generate_note_summary(note::FranklinNote)
-        date = Date(note.rss_pubdate...)
-
-"""\n
-$(note.title)
-=========
-
-**Date:** $(monthname(date)) $(day(date)) $(year(date))
-
-**Summary:** $(note.rss_description)
-
-**Keywords:** $(note.keywords)
 """
+TODO: ADD DOCS
+"""
+function generate_note_summary(note::FranklinNote)
+    date = Date(note.rss_pubdate...)
+
+    """\n
+    $(note.title)
+    =========
+
+    **Date:** $(monthname(date)) $(day(date)) $(year(date))
+
+    **Summary:** $(note.rss_description)
+
+    **Keywords:** $(note.keywords)
+    """
 end
 
+"""
+TODO: ADD DOCS
+"""
 function generate_references(note::FranklinNote)
-    "\n## References\n\n" * note.references 
+    "\n## References\n\n" * note.references
 end
 
 export create_franklin_note, generate_franklin_template, generate_bibliography, generate_comments, generate_table_of_contents, generate_note_summary, generate_references
