@@ -123,7 +123,49 @@ end
 TODO: ADD DOCS
 """
 function generate_references(note::FranklinNote)
-    "\n## References\n\n" * note.references
+    note.references
 end
 
-export create_franklin_note, generate_franklin_template, generate_bibliography, generate_comments, generate_table_of_contents, generate_note_summary, generate_references
+function generate_citation(note::FranklinNote; citations="")
+
+    date = Date(note.rss_pubdate...)
+
+    if isempty(citations)
+
+        page_citation = "Zelko, Jacob. _$(strip(note.title))_" * ". " * "[https://jacobzelko.com/$(note.slug)](https://jacobzelko.com/$(note.slug)). " * "$(monthname(date)) $(day(date)) $(year(date)).\n"
+
+        return """## How To Cite\n\n $(page_citation)"""
+
+    end
+
+    for citation in eachrow(citations)
+        if citation.filename == note.slug * ".md" && !ismissing(citation.authors)
+
+            author = split(citation.authors[1])
+            page_citation = "$(join(author[2:end])), $(author[1]); "
+
+            for author in authors[2:end-1]
+                author = split(author)
+                page_citation = page_citation * "$(join(author[2:end])), $(author[1])"
+            end
+
+            author = split(authors[end])
+            page_citation = page_citation * "$(join(author[2:end])), $(author[1]). "
+
+            page_citation = "Zelko, Jacob. _$(strip(note.title))_" * ". " * "[https://jacobzelko.com/$(note.slug)](https://jacobzelko.com/$(note.slug)). " * "$(monthname(date)) $(day(date)) $(year(date)).\n"
+
+            return """## How To Cite\n\n $(page_citation)"""
+
+
+        else
+
+            page_citation = "Zelko, Jacob. _$(strip(note.title))_" * ". " * "[https://jacobzelko.com/$(note.slug)](https://jacobzelko.com/$(note.slug)). " * "$(monthname(date)) $(day(date)) $(year(date)).\n"
+
+            return """## How To Cite\n\n $(page_citation)"""
+
+        end
+
+    end
+end
+
+export create_franklin_note, generate_franklin_template, generate_bibliography, generate_comments, generate_table_of_contents, generate_note_summary, generate_references, generate_citation
