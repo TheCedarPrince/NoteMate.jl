@@ -90,14 +90,15 @@ Given text and a regular expression that matches a markdown link, extract and re
 """
 function find_markdown_links(text::String; key_regex::Regex=r"\[([^\[]+)\](\(.*\))", group_links=false)
     markdown_links = join(collect(eachmatch(key_regex, text)) .|> x -> x.match, "\n")
+    markdown_links = convert(Vector{String}, split(markdown_links, "\n"))
 
     if group_links
-        web_links = filter!(x -> contains(x, "http"), markdown_links)
-        anchor_links = filter!(x -> contains(x, "](#"), markdown_links)
-        relative_links = markdown_links
+        web_links = filter(x -> contains(x, "http"), markdown_links)
+        anchor_links = filter(x -> contains(x, "](#"), markdown_links)
+        relative_links = setdiff(markdown_links, web_links, anchor_links)
         return Dict("web_links" => web_links, "anchor_links" => anchor_links, "relative_links" => relative_links)
     else
-        return split(markdown_links, "\n")
+        return markdown_links
     end
 end
 
@@ -119,8 +120,12 @@ Given a list of strings denoting a markdown link of the form `[text](link)`, upd
 function create_relative_links(link_strings; prefix = "")
     revised_links = []
     for link in link_strings
-        replace(link, "](" => "]($prefix") |> 
-        text -> push!(revised_links, text)
+        if contains(link, ".md")
+            replace(link, "](" => "]($prefix") |> x -> replace(x, ".md" => "") |> 
+            x -> push!(revised_links, x)
+        else
+            push!(revised_links, link)
+        end
     end
     return Dict(link_strings .=> revised_links)
 end
