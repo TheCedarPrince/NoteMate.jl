@@ -1,5 +1,10 @@
 """
-TODO: ADD DOCS
+    create_franklin_note(note::Note, date_format::String="U d y")
+
+Transform a generic NoteMate Note into a [FranklinNote](@ref) data structure with special metadata from note content.
+
+FranklinNote require special information used to configure properties like RSS metadata. This information can be 
+derived from the information in a generic NoteMate note structure. 
 """
 function create_franklin_note(note::Note; date_format::String="U d y")
     title = note.title
@@ -35,7 +40,18 @@ function create_franklin_note(note::Note; date_format::String="U d y")
 end
 
 """
-TODO: ADD DOCS
+    generate_franklin_template()
+
+Translate submitted information into a multi-line string of Fraklin `+++` [page variable declarations](https://franklinjl.org/syntax/page-variables/).
+
+Fraklin page variables may be declared as Julia expressions between a leading and trailing `+++`. This function turns
+what information is submitted into individual line statements. It will return at least an empty page variable declaration
+of the form 
+```
++++
++++
+```
+if no arguments are submitted on the call. 
 """
 function generate_franklin_template(; title=nothing, slug=nothing, tags=nothing, description=nothing, rss_title=nothing, rss_description=nothing, rss_pubdate=nothing)
 
@@ -75,7 +91,9 @@ function generate_franklin_template(; title=nothing, slug=nothing, tags=nothing,
 end
 
 """
-TODO: ADD DOCS
+    generate_comments
+
+Generates a Fraklin page macro string used to embedd a comments section utility to a page.
 """
 function generate_comments()
     """
@@ -86,7 +104,9 @@ function generate_comments()
 end
 
 """
-TODO: ADD DOCS
+    generate_table_of_contents
+
+Format a "Table of contents" heading and a hyperlinked table  of contents under that heading.  
 """
 function generate_table_of_contents()
     """
@@ -132,6 +152,7 @@ function generate_citation(note::FranklinNote; citations="")
 
     if isempty(citations)
 
+        # FIXME remove hardcoding
         page_citation = "Zelko, Jacob. _$(strip(note.title))_" * ". " * "[https://jacobzelko.com/$(note.slug)](https://jacobzelko.com/$(note.slug)). " * "$(monthname(date)) $(day(date)) $(year(date)).\n"
 
         return """## How To Cite\n\n $(page_citation)"""
@@ -152,6 +173,7 @@ function generate_citation(note::FranklinNote; citations="")
             author = split(authors[end])
             page_citation = page_citation * "$(join(author[2:end])), $(author[1]). "
 
+            # FIXME remove hardcoding
             page_citation = "Zelko, Jacob. _$(strip(note.title))_" * ". " * "[https://jacobzelko.com/$(note.slug)](https://jacobzelko.com/$(note.slug)). " * "$(monthname(date)) $(day(date)) $(year(date)).\n"
 
             return """## How To Cite\n\n $(page_citation)"""
@@ -159,6 +181,7 @@ function generate_citation(note::FranklinNote; citations="")
 
         else
 
+            # FIXME remove hardcoding
             page_citation = "Zelko, Jacob. _$(strip(note.title))_" * ". " * "[https://jacobzelko.com/$(note.slug)](https://jacobzelko.com/$(note.slug)). " * "$(monthname(date)) $(day(date)) $(year(date)).\n"
 
             return """## How To Cite\n\n $(page_citation)"""
