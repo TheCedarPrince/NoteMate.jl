@@ -1,5 +1,0 @@
-NoteMate is a programmatic transformation tool used to parse and manipulate Common Markdown files whose heading structure and contents follow [the Open Knowledge Model](https://jacobzelko.com/04172022033744-open-knowledge-standard/index.html). Due to the way NoteMate internally represents documents, it is however possible to transform notes from different structures to the Open Knowledge Model standard, and to express the standard in different output formats. 
-
-The Open Knowledge Model is well-suited for storing and presenting information in a natively human-readable and -workable format without dependency on third-party metadata tools, following academic inspirations for citations and sourcing information. This makes it a good choice for building digital gardens that can be grown with a high-quality, low-tech evidence chain.
-
-The strong suite of NoteMate is bringing this from the local storage in plain markdown to an intermediate structure you can then translate into various other formats suitable for web hosting or other plattforms.
