@@ -6,9 +6,11 @@ import Dates:
     DateFormat,
     DateTime,
     Date,
+    Day,
     day,
-    year,
+    now, 
     monthname,
+    year,
     yearmonthday
 import Markdown:
     plain,
