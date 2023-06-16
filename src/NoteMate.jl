@@ -3,11 +3,13 @@ module NoteMate
 using CSV
 using DataFrames
 import Dates:
+    @dateformat_str,
     DateFormat,
     DateTime,
     Date,
     Day,
     day,
+    format,
     now, 
     monthname,
     year,
@@ -50,5 +52,6 @@ end
 include("structs.jl")
 include("markdown/parser.jl")
 include("targets/franklin.jl")
+include("newsletter/utils.jl")
 
 end
