@@ -1,5 +1,9 @@
 """
 Struct representing a note in Zettelkasten
+
+The generic Open Knowledge Model note with its key structures, isolated as single strings and some further metadata in appropiate 
+types. Within the constraints of NoteMate this is the generic type to which any note from any specific format parses down, and from 
+which other note structures for representation targets are build using templating functions.
 """
 struct Note
     title::Any
@@ -16,7 +20,12 @@ struct Note
 end
 
 """
-Struct representing a `Note` to be deployed to a Franklin website
+    FranklinNote
+    
+Struct representing a `Note` to be deployed to a Franklin website.
+
+A `note` headed for expression as a Franklin markdown and then a webpage requires additional metadata demanded by Franklin to 
+    execute the whole conversion, including information for the RSS feed.
 """
 struct FranklinNote
     title::Any # Note.title

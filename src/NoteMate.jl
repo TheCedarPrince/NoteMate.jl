@@ -16,6 +16,17 @@ import Markdown:
     parse
 using pandoc_jll
 
+"""
+    sync_file
+
+On a unix system, copy a source file to a target file if the modification times of the files are not equal. 
+
+Requires the `cp -p` command to run successfully.
+
+# Arguments
+- `src`: the source file to copy from
+- `tgt`: the target file to copy to
+"""
 function sync_file(src, tgt)
 
     if verify_template(src) == false
