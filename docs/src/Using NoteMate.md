@@ -1,43 +1,153 @@
-# Using NoteMate
+# Transforming Markdown Notes To a Given Target
 
-NoteMate at its heart is a toolbox first, and a workflow second. NoteMate is designed to be flexible enough so that you can adapt it to your note structure and output targets while supporting the Open Knowledge Model. 
+<!--TODO: Add that we are targeting Franklin.jl-->
 
-NoteMate is made up of three major sections: parser functions, intermediate structures, and output formaters. 
+This workflow explains how one could parse a Markdown note to a NoteMate target and utilize the full suite of tools within NoteMate.
+It is an implementation suggestion that one does not have to follow strictly but serves as a starting point in developing one's own workflow. 
 
-## Parsing
-Represented by the appropiate [`parser.jl`](@ref) file, the first step to turning your notes into another format is finding the information OKM requires from the full Markdown document. 
+## Requirements
 
-The first step is to select all the notes you wish to transform. This is open to you. A classical implementation may be to find all the documents in a particular folder on your system, but more elaborate selection scripts might be used. That said, it is helpful to store candidate documents in a specific folder even if your selection is more advanced, for debugging and safety purporses. 
+<!--TODO: Refactor this and turn it into a separate repository that can be cloned within one's own computer for simplicity.-->
 
-Once you have your notes selected, use [`read(io::IO, String)`](ref) to turn your documents into String objects. 
+To follow this tutorial, create a separate project directory -- I will refer to it as `projdir` going forward -- on your computer, activate Julia, and add the following packages to your project:
 
-### Pre-processing 
-Raw Markdown files may want to be pre-processed in their content before they are cut apart. 
-
-#### Pre-processing citations
-Citation keys in standard OKM are defined as Markdown links with no anchor of the form:
 ```
-[@exampleCitation]
+TODO: we may not need CSV and DataFrames; finish tutorial and review.
+pkg> add CSV@0.10.8
+pkg> add Dates
+pkg> add DataFrames@1.4.4
+pkg> add Markdown
 ```
-The text within should match a citation key in your `.bib` file. If you want to cite multiple sources in the same link, separate them with `;`
+
+For this example, we will also be using the following sample note:
+
+```markdown
+# How Big Is a Chunk?
+
+**Date:** January 07 2023
+
+**Summary:** An interesting foundation for the notion of "chunking" in memory and education research
+
+**Keywords:** #chunk #memory #bit #unit ##bibliography #archive
+
+## Bibliography
+
+H. A. Simon, "How Big Is a Chunk? By combining data from several experiments, a basic human memory unit can be identified and measured.," Science, vol. 183, no. 4124, pp. 482–488, 1974.
+
+## Notes
+
+### Reading Motivation
+
+In reading a piece by Michael Nielsen on using spaced repetition to process mathematics [@nielsenUsingSpacedRepetition2019], he referenced a concept called "chunking".
+I hadn't encountered this notion in education research before and thought it sounded interesting. 
+So, thus reading the paper.
+
+### What Are Chunks?
+
+Loosely based on [@miller1956magical], chunks are constructs which organize and group together units of information input into memory.
+These inputs can be of any form and the basic units could be things like phonemes in words, moves in chess, etc. that can then be recalled at once (a Bible verse, a Sicilian Defense, etc.).
+The material stored in a chunk is independent of how many chunks can be generated.
+
+### Benefits of Chunk Generation
+
+The memory span seems to be constrained by a fixed number of chunks (although this number varies wildly in the paper). 
+However, we can increase the information stored in memory by increasing the number of units belonging to each chunk.
+[@miller1956magical]
+
+As regaled by Simon, an example of chunking in action is this:
+
+> I tried to recall after one reading the following list of words: Lincoln, milky, criminal, differential, address, way, lawyer, calculus, Gettysburg. I had no success whatsoever. I should not have expected success, for the list exceeded my span of six or seven words. Then I rearranged the list a bit, as follows:
+> 
+> - Lincoln's Gettysburg Address
+> - Milky Way 
+> - Criminal Lawyer 
+> - Differential Calculus
+>
+> I had no difficulty at all
+
+The variance between chunks and memory can be attributed to larger chunk sizes based on one's expertise with a material. [@chase1973mind, @simon1973american]
+
+## References:
+
 ```
-[@exampleCitationa, @exampleCitationb]
+
+Save this note inside of `projdir` as `note.md` and we are ready to build our workflow.
+
+## Pre-Processing of a Markdown Note
+
+To process this note into a NoteMate understandable object, NoteMate provides a series of tools to make some of the rudimentary parsing easier.
+To get started, we will read this file as a `String`:
+
+```julia
+note = read("note.md", String)
 ```
-Replacement is a two-step process. 
-1. find all the citation groups in the String using [`find_citation_groups()`](@ref), and store the returned Vector for use in building your references section. 
-2. use [`create_inline_citations()`](@ref) to generatu for the citation groups, simple numerical placeholders.
 
-Then use [`replace()`](@ref) with the two data structures for processing the string with your new inserts. 
+The reason why we read this as a `String` is so that we can do pattern matching to apply various transformations to the raw representation of the note.
 
-#### Pre-processing links to other documents
-Links to other documents may require custom processing for the structure of your target format, especially web pages. For these cases, you have another two functions available. 
+### Generating Citations
 
-1. Find all the links in the file using [`find_markdown_links()`](@ref) to isolate a vector of aoll the markdown links in your file. By setting the `group_links` keyword argument, you can get a dictionary with vectors for web links (link target contains the `http` substring), anchor links (the link target stats with a `#`) or relative links (all other links)
-2. Use the vector of all links and the `prefix` keyword argument with [`create_relative_links()`](@ref), to extend all relative links in the document with the string prefix you specify. 
+Let's first extract and replace the citation keys present within this note with their correct inline citations:
 
-Again, use [`replace()`](@ref) with the two data structures for processing the string with your new inserts. 
+```julia
+# See Steps 1 & 2
+citation_keys = find_citation_groups(note) 
 
-### Structured processing 
+# See Steps 3 & 4
+inline_citations_dict = create_inline_citations(citation_keys, "refs.bib", "ieee.csl")
+
+# See Step 5
+note = replace(note, inline_citations_dict...)
+```
+
+Here is what this code block does: 
+
+1. Find all the citation groups within the `String` using [`find_citation_groups()`](@ref).
+This returns a vector with all the unique citation groups found within the `String`.
+2. Store this result in the `citation_keys` variable.
+3. Define the actual inline reference representation for the found citation keys using [`create_inline_citations()`](@ref).
+This function utilizes `refs.bib` to map the citation keys found in the `String` to the correct reference information.
+Once each key's reference information was found, the `ieee.csl` file defines how the inline citation should appear within the final note.
+4. Store this mapping within `inline_citations_dict` 
+5. Now, we replace all respective citation groups with their appropriate inline citation.
+
+> **NOTE: What Will Inline Citations Look Like?** As we are using the IEEE CSL format, citation groups that look like this: `[@chase1973mind, @simon1973american]` will be rendered to look something like this in the document `[3, 4]`.
+
+### Updating Link Paths
+
+Next, let's scan the document for any links and see which one are relative links.
+
+> **NOTE: What Is a Relative Link?** These are links that are made within a document that references another note or object within the same directory as the initial document. 
+> We want to preserve these relationships as they are transformed so as to not lose this information in an eventual deployment.
+
+To do this, we will use the following code snippet:
+
+```julia
+# See Steps 1 & 2
+markdown_links = find_markdown_links(note, group_links = true)
+
+# See Steps 3 & 4
+relative_links_dict = create_relative_links(markdown_links["relative_links"]; prefix="https://jacobzelko.com/")
+
+# See Steps 5
+note = replace(note, relative_links_dict...)
+```
+
+To accomplish this, we will use the following process:
+
+1. Find all markdown links in a `String` using [`find_markdown_links()`](@ref).
+By setting the keyword argument, `group_links = true`, a dictionary of vectors is returned that defines web links (links that link to somewhere on the internet), anchor links (links that jumps to a specific place in a document) or relative links.
+
+2. Store links within `markdown_links`.
+
+<!--TODO: Add in a prefix for this tutorial-->
+3. Using `markdown_links`, we can use the [`create_relative_links()`](@ref), to update or finalize relative links that were found before deployment to a target output.
+
+4. Store this mapping within `relative_links_dict`.
+
+5. Finally, we replace all relative links with their newly updated path.
+
+## Processing an OKM Note by Each Component
+
 With pre-processing complete, you can start cutting the document apart using its Markdown structure. 
 
 Use [`Markdown.parse()`](@ref) to generate a parsed representation of the document string you have worked with so far. 
