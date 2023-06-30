@@ -7,16 +7,15 @@ It is an implementation suggestion that one does not have to follow strictly but
 
 ## Requirements
 
-<!--TODO: Refactor this and turn it into a separate repository that can be cloned within one's own computer for simplicity.-->
+<!--TODO: Add a resources directory to be added-->
+<!--TODO: Add the relevant documents within the document-->
 
 To follow this tutorial, create a separate project directory -- I will refer to it as `projdir` going forward -- on your computer, activate Julia, and add the following packages to your project:
 
 ```
-TODO: we may not need CSV and DataFrames; finish tutorial and review.
-pkg> add CSV@0.10.8
 pkg> add Dates
-pkg> add DataFrames@1.4.4
 pkg> add Markdown
+pkg> add NoteMate
 ```
 
 For this example, we will also be using the following sample note:
@@ -148,48 +147,129 @@ By setting the keyword argument, `group_links = true`, a dictionary of vectors i
 
 ## Processing an OKM Note by Each Component
 
-With pre-processing complete, you can start cutting the document apart using its Markdown structure. 
+With pre-processing complete, we can now start ingesting the specifics of the note into OKM components.
+In particular, we will ingest the following components:
 
-Use [`Markdown.parse()`](@ref) to generate a parsed representation of the document string you have worked with so far. 
+- **Title Block** - this is a unique block that begins with the name of the note followed by three required subcomponents:
 
-After that, you can start processing. NoteMate offers some utility functions. 
+	- **Date** - the date the note was created
 
-[`get_headers()`](@ref) finds all the Markdown headers in the file structure. You can discriminate the level of the headers by checking for type: `Header{1}` is the type of a level 1 header as produced by a single `#` 
+	- **Summary** - a brief, single sentence summary of what this note is about
 
-You can use filters and regex matches to create a beginning-to-end vector of headings you want to use to split the document. 
+	- **Keywords** - keywords that can be used to find or associated with the content of this note
 
-Then you can invoke [`get_sections()`](@ref). This function will take your vector and cut the document apart with all text between each heading isolated as one section. You can preserve the section titles for matching when composing the output file.
+- **Bibliography Block** - this contains the bibliographic information that is associated with the specific note 
 
-A similar function is [`get_title_section()`](@ref), which can isolate the single section under the first `Header{1}` and the subsequent text until the first next header. 
+- **Notes** - where one's notes go on the note subject in whatever format one so chooses
 
-Lastly, you can create the [`create_references()`](@ref) function to consume the citation groups vector you produced during the pre-processing and generate a matching full-format references section. 
+- **References** - list of references used in the note
 
-## Populate structured note
-With the note processed using the parsing utility function, you can populate your [`Note`](@ref) struct with the information you have pulled from the note so far, producing the OKM-complient intermidiate format. Use filtering by string contents in section titles and other such structures you know, or your own functions, to set all the information in the struct. 
+To start, we use [`Markdown.parse()`](@ref) to generate a parsed representation of the `note` to turn it into a Julia-understandable Markdown representation:
 
-## Producing an output
-With the note parsed into the OKM-complient intermediary, you can now target an OKM-compliant expression in another formating.
-
-### `Franklin.jl` target
-For formatting a `Franklin.jl`-compliant markdown, you have the functions of [`franklin.jl`](@ref). Notes are formated top to bottom. 
-
-The foundation of a Franklin note formating is the [`FranklinNote`](@ref) struct. Generate this struct using the [`create_franklin_note()`](@ref), which will automatically derive the other information needed for a Franklin document from a normal NoteMate note struct. 
-
-Then, start generating your page string. 
-
-Use [`generate_franklin_template()`](@ref) to generate the initial page stup with the Franklin metadata. 
-
-Then concatenate the rest of your page content, like so: 
-```Julia
-page = page * generate_note_summary(franklin_note)
-page = page * generate_bibliography(franklin_note)
-page = page * generate_table_of_contents()
-page = page * franklin_note.notes
-page = page * generate_citation(franklin_note; citations = authors)
-page = page * generate_references(franklin_note)
-page = page * generate_comments()
-
+```julia
+parsed_note = parse(note)
 ```
 
-And write the resulting string to a markdown file at your Franklin destination path. 
+From there, the `note` can be parsed readily as a Julia Markdown object.
+NoteMate offers some utility functions to help with this parsing as shown below:
 
+```julia
+note_headers = get_headers(parsed_note.content)
+title_header = filter(x -> typeof(x) <: Header{1}, note_headers)
+section_headers = filter(x -> typeof(x) <: Header{2}, note_headers)
+
+sections = get_sections(parsed_note.content, section_headers; name_sections=true)
+title_section = get_title_section(parsed_note.content, title_header; name_sections=true)
+references_section = create_references(citation_keys, bibtex_path, csl_path)
+note_sections = merge!(sections, title_section)
+note_sections["References"] = (note_sections["References"][1] |> plain) * "\n" * references_section |> parse |> x -> x.content
+
+title_section = note_sections["Title"]
+bibliography_section = note_sections["Bibliography"][2] |> plain
+notes_section = note_sections["Notes"][2:end] |> plain
+references_section = note_sections["References"] |> plain
+
+title = title_section[1].text[1] |> x -> replace(x, "\"" => "'")
+date = title_section[2].content[2] |> strip
+summary = title_section[3].content[2] |> strip |> x -> replace(x, "\"" => "'")
+keywords = title_section[4].content[2] |> strip
+```
+
+In lieu of explaining all particulars here, here is the general process in how this code block works:
+
+- [`get_headers()`](@ref) finds all the Markdown headers in the `parsed_note` structure.
+
+- [`get_sections()`](@ref) will further parse available headers and cut the document apart with all text between each heading isolated as one section.
+
+- [`get_title_section()`](@ref), gets the single section under the first `Header{1}` and allows it to be parsed into multiple OKM components. 
+
+- [`create_references()`](@ref) uses the function to generate full references for a note's reference component using the `citation_keys` variable generated earlier. 
+
+- A combination of various filters are then used to do additional component splitting and parsing to ingest all needed information into the required OKM components.
+
+Then, we can create a NoteMate [`Note`](@ref) object:
+
+```julia
+note = Note(title, date, summary, keywords, bibliography_section, references_section, notes_section, basename("notes.md"), "notes.md", "ieee.csl", "refs.bib")
+```
+
+> **NOTE: Note parsing seems too fragile?** If you noticed that parsing this note into each component seemed brittle or too fragile, this is both a strength and a weakness of the OKM.
+> The OKM is flexible enough to allow one to implement the OKM however way they want which gives a lot of flexibility to usage.
+> However, it comes at the cost that any implementation will need to be parsed according to the way it was implemented into a NoteMate [`Note](@ref)`.
+
+## Targeting Franklin.jl as an Output Target
+
+With the note parsed into an OKM [`Note`](@ref) object, we can now use NoteMate tools to create a Franklin.jl compliant output. 
+We use [`create_franklin_note()`](@ref) to created a [`FranklinNote`](@ref) object that is used by NoteMate and [`generate_franklin_template()`](@ref) to generate the initial page set-up with necessary Franklin specific syntax mark-up:
+
+```julia
+franklin_note_raw = create_franklin_note(note)
+
+franklin_note = ""
+franklin_note = franklin_note * generate_franklin_template(title=franklin_note_raw.title, slug=franklin_note_raw.slug, tags=franklin_note_raw.tags, description=franklin_note_raw.description, rss_title=franklin_note_raw.rss_title, rss_description=franklin_note_raw.rss_description, rss_pubdate=franklin_note_raw.rss_pubdate)
+```
+
+From here, NoteMate provides a variety of tools that accept a `FranklinNote` to generate content for a note written using Franklin markup. 
+Here is an example of how this is done: 
+
+```julia
+# Generate summary section
+franklin_note = franklin_note * generate_note_summary(franklin_note_raw)
+
+# Generate bibliography section
+franklin_note = franklin_note * generate_bibliography(franklin_note_raw)
+
+# Generate a Franklin Table of Contents
+franklin_note = franklin_note * generate_table_of_contents()
+
+# Add note content into the Franklin page
+franklin_note = franklin_note * franklin_note_raw.notes
+
+# Generate a references output section
+franklin_note = franklin_note * generate_references(franklin_note_raw)
+
+# Write the final note to a file
+write("franklin_note.md", franklin_note)
+```
+
+## Conclusion and Discussion
+
+Congratulations! 
+This illustrates a potential workflow using NoteMate to go from OKM-compliant Markdown notes to a Franklin note!
+The final Franklin note then could be directly added to a Franklin-based website deployment and rendered on the internet.
+This example workflow shows a potential path one could take using NoteMate to ingest an OKM-compliant note and produce an output.
+Additional functionality could be added to a workflow to, for example, iterate through one's entire note base, add custom sections to a specific output one would want, or swap citation styles on the fly.
+With the scripting ability enabled by NoteMate to iteratively build notes, the possibilities are numerous.
+
+## Appendix
+
+### Full Script
+
+Here was the full script that was developed in the course of this tutorial:
+
+<!--TODO: Add full script that was generated-->
+
+```julia
+```
+
+<!--TODO: Rename tutorial file-->
