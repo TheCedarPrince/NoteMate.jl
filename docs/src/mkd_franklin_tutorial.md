@@ -1,14 +1,10 @@
-# Transforming Markdown Notes To a Given Target
-
-<!--TODO: Add that we are targeting Franklin.jl-->
+# Transforming Markdown Notes To a Given Target ⚗️
 
 This workflow explains how one could parse a Markdown note to a NoteMate target and utilize the full suite of tools within NoteMate.
+In this tutorial, we will take a Markdown note to a Franklin.jl target output note.
 It is an implementation suggestion that one does not have to follow strictly but serves as a starting point in developing one's own workflow. 
 
-## Requirements
-
-<!--TODO: Add a resources directory to be added-->
-<!--TODO: Add the relevant documents within the document-->
+## Requirements 🚨
 
 To follow this tutorial, create a separate project directory -- I will refer to it as `projdir` going forward -- on your computer, activate Julia, and add the following packages to your project:
 
@@ -18,61 +14,21 @@ pkg> add Markdown
 pkg> add NoteMate
 ```
 
-For this example, we will also be using the following sample note:
+Now, we need to copy four files into `projdir` from the [Appendix](#Appendix):
 
-```markdown
-# How Big Is a Chunk?
+- [Sample Note](#Sample-Note) - copy the content in this file and put it into a file called `note.md` within `projdir`.
 
-**Date:** January 07 2023
+- [IEEE CSL](#IEEE-CSL) - copy the content in this file and put it into a file called `ieee.csl` within `projdir`.
 
-**Summary:** An interesting foundation for the notion of "chunking" in memory and education research
+- [BibTeX References](#BibTeX-References) - copy the content in this file and put it into a file called `refs.bib` within `projdir`.
 
-**Keywords:** #chunk #memory #bit #unit ##bibliography #archive
+- [Processing Script](#Full-Script) - copy the content in this file and put it into a file called `script.jl` within `projdir`.
 
-## Bibliography
+Once you have copied these files into the `projdir`, we are ready to go!
+The following steps will guide you through different pieces of `script.jl` and how NoteMate works in supporting note processing workflows. 
+At any point, you can run the full script within `projdir` to test it out.
 
-H. A. Simon, "How Big Is a Chunk? By combining data from several experiments, a basic human memory unit can be identified and measured.," Science, vol. 183, no. 4124, pp. 482–488, 1974.
-
-## Notes
-
-### Reading Motivation
-
-In reading a piece by Michael Nielsen on using spaced repetition to process mathematics [@nielsenUsingSpacedRepetition2019], he referenced a concept called "chunking".
-I hadn't encountered this notion in education research before and thought it sounded interesting. 
-So, thus reading the paper.
-
-### What Are Chunks?
-
-Loosely based on [@miller1956magical], chunks are constructs which organize and group together units of information input into memory.
-These inputs can be of any form and the basic units could be things like phonemes in words, moves in chess, etc. that can then be recalled at once (a Bible verse, a Sicilian Defense, etc.).
-The material stored in a chunk is independent of how many chunks can be generated.
-
-### Benefits of Chunk Generation
-
-The memory span seems to be constrained by a fixed number of chunks (although this number varies wildly in the paper). 
-However, we can increase the information stored in memory by increasing the number of units belonging to each chunk.
-[@miller1956magical]
-
-As regaled by Simon, an example of chunking in action is this:
-
-> I tried to recall after one reading the following list of words: Lincoln, milky, criminal, differential, address, way, lawyer, calculus, Gettysburg. I had no success whatsoever. I should not have expected success, for the list exceeded my span of six or seven words. Then I rearranged the list a bit, as follows:
-> 
-> - Lincoln's Gettysburg Address
-> - Milky Way 
-> - Criminal Lawyer 
-> - Differential Calculus
->
-> I had no difficulty at all
-
-The variance between chunks and memory can be attributed to larger chunk sizes based on one's expertise with a material. [@chase1973mind, @simon1973american]
-
-## References:
-
-```
-
-Save this note inside of `projdir` as `note.md` and we are ready to build our workflow.
-
-## Pre-Processing of a Markdown Note
+## Pre-Processing of a Markdown Note 🚧
 
 To process this note into a NoteMate understandable object, NoteMate provides a series of tools to make some of the rudimentary parsing easier.
 To get started, we will read this file as a `String`:
@@ -83,7 +39,7 @@ note = read("note.md", String)
 
 The reason why we read this as a `String` is so that we can do pattern matching to apply various transformations to the raw representation of the note.
 
-### Generating Citations
+### Generating Citations 📚
 
 Let's first extract and replace the citation keys present within this note with their correct inline citations:
 
@@ -111,7 +67,7 @@ Once each key's reference information was found, the `ieee.csl` file defines how
 
 > **NOTE: What Will Inline Citations Look Like?** As we are using the IEEE CSL format, citation groups that look like this: `[@chase1973mind, @simon1973american]` will be rendered to look something like this in the document `[3, 4]`.
 
-### Updating Link Paths
+### Updating Link Paths 🏔️
 
 Next, let's scan the document for any links and see which one are relative links.
 
@@ -125,7 +81,7 @@ To do this, we will use the following code snippet:
 markdown_links = find_markdown_links(note, group_links = true)
 
 # See Steps 3 & 4
-relative_links_dict = create_relative_links(markdown_links["relative_links"]; prefix="https://jacobzelko.com/")
+relative_links_dict = create_relative_links(markdown_links["relative_links"])
 
 # See Steps 5
 note = replace(note, relative_links_dict...)
@@ -138,14 +94,13 @@ By setting the keyword argument, `group_links = true`, a dictionary of vectors i
 
 2. Store links within `markdown_links`.
 
-<!--TODO: Add in a prefix for this tutorial-->
 3. Using `markdown_links`, we can use the [`create_relative_links()`](@ref), to update or finalize relative links that were found before deployment to a target output.
 
 4. Store this mapping within `relative_links_dict`.
 
 5. Finally, we replace all relative links with their newly updated path.
 
-## Processing an OKM Note by Each Component
+## Processing an OKM Note by Each Component 🛠️
 
 With pre-processing complete, we can now start ingesting the specifics of the note into OKM components.
 In particular, we will ingest the following components:
@@ -164,10 +119,10 @@ In particular, we will ingest the following components:
 
 - **References** - list of references used in the note
 
-To start, we use [`Markdown.parse()`](@ref) to generate a parsed representation of the `note` to turn it into a Julia-understandable Markdown representation:
+To start, we use `Markdown.parse()` to generate a parsed representation of the `note` to turn it into a Julia-understandable Markdown representation:
 
 ```julia
-parsed_note = parse(note)
+parsed_note = Markdown.parse(note)
 ```
 
 From there, the `note` can be parsed readily as a Julia Markdown object.
@@ -217,7 +172,7 @@ note = Note(title, date, summary, keywords, bibliography_section, references_sec
 > The OKM is flexible enough to allow one to implement the OKM however way they want which gives a lot of flexibility to usage.
 > However, it comes at the cost that any implementation will need to be parsed according to the way it was implemented into a NoteMate [`Note](@ref)`.
 
-## Targeting Franklin.jl as an Output Target
+## Targeting Franklin.jl as an Output Target 🎯
 
 With the note parsed into an OKM [`Note`](@ref) object, we can now use NoteMate tools to create a Franklin.jl compliant output. 
 We use [`create_franklin_note()`](@ref) to created a [`FranklinNote`](@ref) object that is used by NoteMate and [`generate_franklin_template()`](@ref) to generate the initial page set-up with necessary Franklin specific syntax mark-up:
@@ -252,7 +207,7 @@ franklin_note = franklin_note * generate_references(franklin_note_raw)
 write("franklin_note.md", franklin_note)
 ```
 
-## Conclusion and Discussion
+## Congratulations! You Just Converted Your First Note! 🥳 
 
 Congratulations! 
 This illustrates a potential workflow using NoteMate to go from OKM-compliant Markdown notes to a Franklin note!
@@ -261,15 +216,55 @@ This example workflow shows a potential path one could take using NoteMate to in
 Additional functionality could be added to a workflow to, for example, iterate through one's entire note base, add custom sections to a specific output one would want, or swap citation styles on the fly.
 With the scripting ability enabled by NoteMate to iteratively build notes, the possibilities are numerous.
 
-## Appendix
+## Appendix 🔍
+
+### Sample Note
+
+````@eval
+using Markdown 
+
+Markdown.parse("""
+```markdown
+$(read("./resources/note.txt", String))
+```
+""")
+````
+
+### IEEE CSL
+
+````@eval
+using Markdown 
+
+Markdown.parse("""
+```text
+$(read("./resources/ieee.csl", String))
+```
+""")
+````
+
+### BibTeX References
+
+````@eval
+using Markdown 
+
+Markdown.parse("""
+```latex
+$(read("./resources/refs.bib", String))
+```
+""")
+````
 
 ### Full Script
 
 Here was the full script that was developed in the course of this tutorial:
 
-<!--TODO: Add full script that was generated-->
+````@eval
+using Markdown 
 
+Markdown.parse("""
 ```julia
+$(read("./resources/mkd_franklin_tutorial_script.jl", String))
 ```
+""")
+````
 
-<!--TODO: Rename tutorial file-->
