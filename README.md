@@ -19,11 +19,8 @@ Finally, due to the way `NoteMate.jl` parses documents, `NoteMate.jl` can transf
 To install `NoteMate.jl` currently, one needs to run the following command in their Julia REPL:
 
 ```
-pkg> add https://github.com/TheCedarPrince/NoteMate
+pkg> add NoteMate
 ```
-
-<!--TODO: Add final instructions before first release! -->
-
 
 # Current Capabilities
 
