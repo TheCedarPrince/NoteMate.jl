@@ -14,7 +14,10 @@ makedocs(;
     ),
     pages = [
         "Home" => "index.md",
-        "API Reference" => "api.md"
+        "API Reference" => "api.md",
+        "Tutorials" => [
+          "Markdown Tutorial" => "mkd_franklin_tutorial.md"
+        ]
     ],
 )
 
