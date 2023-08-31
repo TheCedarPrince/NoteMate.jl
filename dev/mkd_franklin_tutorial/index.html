@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Markdown Tutorial · NoteMate.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">NoteMate.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../api/">API Reference</a></li><li><span class="tocitem">Tutorials</span><ul><li class="is-active"><a class="tocitem" href>Markdown Tutorial</a><ul class="internal"><li><a class="tocitem" href="#Requirements"><span>Requirements 🚨</span></a></li><li><a class="tocitem" href="#Pre-Processing-of-a-Markdown-Note"><span>Pre-Processing of a Markdown Note 🚧</span></a></li><li><a class="tocitem" href="#Processing-an-OKM-Note-by-Each-Component"><span>Processing an OKM Note by Each Component 🛠️</span></a></li><li><a class="tocitem" href="#Targeting-Franklin.jl-as-an-Output-Target"><span>Targeting Franklin.jl as an Output Target 🎯</span></a></li><li><a class="tocitem" href="#Congratulations!-You-Just-Converted-Your-First-Note!"><span>Congratulations! You Just Converted Your First Note! 🥳</span></a></li><li><a class="tocitem" href="#Appendix"><span>Appendix 🔍</span></a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Markdown Tutorial</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Markdown Tutorial</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/TheCedarPrince/NoteMate/blob/dev/docs/src/mkd_franklin_tutorial.md#L" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Transforming-Markdown-Notes-To-a-Given-Target"><a class="docs-heading-anchor" href="#Transforming-Markdown-Notes-To-a-Given-Target">Transforming Markdown Notes To a Given Target ⚗️</a><a id="Transforming-Markdown-Notes-To-a-Given-Target-1"></a><a class="docs-heading-anchor-permalink" href="#Transforming-Markdown-Notes-To-a-Given-Target" title="Permalink"></a></h1><p>This workflow explains how one could parse a Markdown note to a NoteMate target and utilize the full suite of tools within NoteMate. In this tutorial, we will take a Markdown note to a Franklin.jl target output note. It is an implementation suggestion that one does not have to follow strictly but serves as a starting point in developing one&#39;s own workflow. </p><h2 id="Requirements"><a class="docs-heading-anchor" href="#Requirements">Requirements 🚨</a><a id="Requirements-1"></a><a class="docs-heading-anchor-permalink" href="#Requirements" title="Permalink"></a></h2><p>To follow this tutorial, create a separate project directory – I will refer to it as <code>projdir</code> going forward – on your computer, activate Julia, and add the following packages to your project:</p><pre><code class="nohighlight hljs">pkg&gt; add Dates
+pkg&gt; add Markdown
+pkg&gt; add NoteMate</code></pre><p>Now, we need to copy four files into <code>projdir</code> from the <a href="#Appendix">Appendix</a>:</p><ul><li><p><a href="#Sample-Note">Sample Note</a> - copy the content in this file and put it into a file called <code>note.md</code> within <code>projdir</code>.</p></li><li><p><a href="#IEEE-CSL">IEEE CSL</a> - copy the content in this file and put it into a file called <code>ieee.csl</code> within <code>projdir</code>.</p></li><li><p><a href="#BibTeX-References">BibTeX References</a> - copy the content in this file and put it into a file called <code>refs.bib</code> within <code>projdir</code>.</p></li><li><p><a href="#Full-Script">Processing Script</a> - copy the content in this file and put it into a file called <code>script.jl</code> within <code>projdir</code>.</p></li></ul><p>Once you have copied these files into the <code>projdir</code>, we are ready to go! The following steps will guide you through different pieces of <code>script.jl</code> and how NoteMate works in supporting note processing workflows.  At any point, you can run the full script within <code>projdir</code> to test it out.</p><h2 id="Pre-Processing-of-a-Markdown-Note"><a class="docs-heading-anchor" href="#Pre-Processing-of-a-Markdown-Note">Pre-Processing of a Markdown Note 🚧</a><a id="Pre-Processing-of-a-Markdown-Note-1"></a><a class="docs-heading-anchor-permalink" href="#Pre-Processing-of-a-Markdown-Note" title="Permalink"></a></h2><p>To process this note into a NoteMate understandable object, NoteMate provides a series of tools to make some of the rudimentary parsing easier. To get started, we will read this file as a <code>String</code>:</p><pre><code class="language-julia hljs">note = read(&quot;note.md&quot;, String)</code></pre><p>The reason why we read this as a <code>String</code> is so that we can do pattern matching to apply various transformations to the raw representation of the note.</p><h3 id="Generating-Citations"><a class="docs-heading-anchor" href="#Generating-Citations">Generating Citations 📚</a><a id="Generating-Citations-1"></a><a class="docs-heading-anchor-permalink" href="#Generating-Citations" title="Permalink"></a></h3><p>Let&#39;s first extract and replace the citation keys present within this note with their correct inline citations:</p><pre><code class="language-julia hljs"># See Steps 1 &amp; 2
+citation_keys = find_citation_groups(note) 
+
+# See Steps 3 &amp; 4
+inline_citations_dict = create_inline_citations(citation_keys, &quot;refs.bib&quot;, &quot;ieee.csl&quot;)
+
+# See Step 5
+note = replace(note, inline_citations_dict...)</code></pre><p>Here is what this code block does: </p><ol><li>Find all the citation groups within the <code>String</code> using <a href="../api/#NoteMate.find_citation_groups"><code>find_citation_groups()</code></a>.</li></ol><p>This returns a vector with all the unique citation groups found within the <code>String</code>.</p><ol><li>Store this result in the <code>citation_keys</code> variable.</li><li>Define the actual inline reference representation for the found citation keys using <a href="../api/#NoteMate.create_inline_citations"><code>create_inline_citations()</code></a>.</li></ol><p>This function utilizes <code>refs.bib</code> to map the citation keys found in the <code>String</code> to the correct reference information. Once each key&#39;s reference information was found, the <code>ieee.csl</code> file defines how the inline citation should appear within the final note.</p><ol><li>Store this mapping within <code>inline_citations_dict</code> </li><li>Now, we replace all respective citation groups with their appropriate inline citation.</li></ol><blockquote><p><strong>NOTE: What Will Inline Citations Look Like?</strong> As we are using the IEEE CSL format, citation groups that look like this: <code>[@chase1973mind, @simon1973american]</code> will be rendered to look something like this in the document <code>[3, 4]</code>.</p></blockquote><h3 id="Updating-Link-Paths"><a class="docs-heading-anchor" href="#Updating-Link-Paths">Updating Link Paths 🏔️</a><a id="Updating-Link-Paths-1"></a><a class="docs-heading-anchor-permalink" href="#Updating-Link-Paths" title="Permalink"></a></h3><p>Next, let&#39;s scan the document for any links and see which one are relative links.</p><blockquote><p><strong>NOTE: What Is a Relative Link?</strong> These are links that are made within a document that references another note or object within the same directory as the initial document.  We want to preserve these relationships as they are transformed so as to not lose this information in an eventual deployment.</p></blockquote><p>To do this, we will use the following code snippet:</p><pre><code class="language-julia hljs"># See Steps 1 &amp; 2
+markdown_links = find_markdown_links(note, group_links = true)
+
+# See Steps 3 &amp; 4
+relative_links_dict = create_relative_links(markdown_links[&quot;relative_links&quot;])
+
+# See Steps 5
+note = replace(note, relative_links_dict...)</code></pre><p>To accomplish this, we will use the following process:</p><ol><li>Find all markdown links in a <code>String</code> using <a href="../api/#NoteMate.find_markdown_links"><code>find_markdown_links()</code></a>.</li></ol><p>By setting the keyword argument, <code>group_links = true</code>, a dictionary of vectors is returned that defines web links (links that link to somewhere on the internet), anchor links (links that jumps to a specific place in a document) or relative links.</p><ol><li><p>Store links within <code>markdown_links</code>.</p></li><li><p>Using <code>markdown_links</code>, we can use the <a href="../api/#NoteMate.create_relative_links"><code>create_relative_links()</code></a>, to update or finalize relative links that were found before deployment to a target output.</p></li><li><p>Store this mapping within <code>relative_links_dict</code>.</p></li><li><p>Finally, we replace all relative links with their newly updated path.</p></li></ol><h2 id="Processing-an-OKM-Note-by-Each-Component"><a class="docs-heading-anchor" href="#Processing-an-OKM-Note-by-Each-Component">Processing an OKM Note by Each Component 🛠️</a><a id="Processing-an-OKM-Note-by-Each-Component-1"></a><a class="docs-heading-anchor-permalink" href="#Processing-an-OKM-Note-by-Each-Component" title="Permalink"></a></h2><p>With pre-processing complete, we can now start ingesting the specifics of the note into OKM components. In particular, we will ingest the following components:</p><ul><li><strong>Title Block</strong> - this is a unique block that begins with the name of the note followed by three required subcomponents:</li></ul><pre><code class="nohighlight hljs">- **Date** - the date the note was created
+
+- **Summary** - a brief, single sentence summary of what this note is about
+
+- **Keywords** - keywords that can be used to find or associated with the content of this note</code></pre><ul><li><p><strong>Bibliography Block</strong> - this contains the bibliographic information that is associated with the specific note </p></li><li><p><strong>Notes</strong> - where one&#39;s notes go on the note subject in whatever format one so chooses</p></li><li><p><strong>References</strong> - list of references used in the note</p></li></ul><p>To start, we use <code>Markdown.parse()</code> to generate a parsed representation of the <code>note</code> to turn it into a Julia-understandable Markdown representation:</p><pre><code class="language-julia hljs">parsed_note = Markdown.parse(note)</code></pre><p>From there, the <code>note</code> can be parsed readily as a Julia Markdown object. NoteMate offers some utility functions to help with this parsing as shown below:</p><pre><code class="language-julia hljs">note_headers = get_headers(parsed_note.content)
+title_header = filter(x -&gt; typeof(x) &lt;: Header{1}, note_headers)
+section_headers = filter(x -&gt; typeof(x) &lt;: Header{2}, note_headers)
+
+sections = get_sections(parsed_note.content, section_headers; name_sections=true)
+title_section = get_title_section(parsed_note.content, title_header; name_sections=true)
+references_section = create_references(citation_keys, bibtex_path, csl_path)
+note_sections = merge!(sections, title_section)
+note_sections[&quot;References&quot;] = (note_sections[&quot;References&quot;][1] |&gt; plain) * &quot;\n&quot; * references_section |&gt; parse |&gt; x -&gt; x.content
+
+title_section = note_sections[&quot;Title&quot;]
+bibliography_section = note_sections[&quot;Bibliography&quot;][2] |&gt; plain
+notes_section = note_sections[&quot;Notes&quot;][2:end] |&gt; plain
+references_section = note_sections[&quot;References&quot;] |&gt; plain
+
+title = title_section[1].text[1] |&gt; x -&gt; replace(x, &quot;\&quot;&quot; =&gt; &quot;&#39;&quot;)
+date = title_section[2].content[2] |&gt; strip
+summary = title_section[3].content[2] |&gt; strip |&gt; x -&gt; replace(x, &quot;\&quot;&quot; =&gt; &quot;&#39;&quot;)
+keywords = title_section[4].content[2] |&gt; strip</code></pre><p>In lieu of explaining all particulars here, here is the general process in how this code block works:</p><ul><li><p><a href="../api/#NoteMate.get_headers"><code>get_headers()</code></a> finds all the Markdown headers in the <code>parsed_note</code> structure.</p></li><li><p><a href="../api/#NoteMate.get_sections"><code>get_sections()</code></a> will further parse available headers and cut the document apart with all text between each heading isolated as one section.</p></li><li><p><a href="../api/#NoteMate.get_title_section"><code>get_title_section()</code></a>, gets the single section under the first <code>Header{1}</code> and allows it to be parsed into multiple OKM components. </p></li><li><p><a href="../api/#NoteMate.create_references"><code>create_references()</code></a> uses the function to generate full references for a note&#39;s reference component using the <code>citation_keys</code> variable generated earlier. </p></li><li><p>A combination of various filters are then used to do additional component splitting and parsing to ingest all needed information into the required OKM components.</p></li></ul><p>Then, we can create a NoteMate <a href="../api/#NoteMate.Note"><code>Note</code></a> object:</p><pre><code class="language-julia hljs">note = Note(title, date, summary, keywords, bibliography_section, references_section, notes_section, basename(&quot;notes.md&quot;), &quot;notes.md&quot;, &quot;ieee.csl&quot;, &quot;refs.bib&quot;)</code></pre><blockquote><p><strong>NOTE: Note parsing seems too fragile?</strong> If you noticed that parsing this note into each component seemed brittle or too fragile, this is both a strength and a weakness of the OKM. The OKM is flexible enough to allow one to implement the OKM however way they want which gives a lot of flexibility to usage. However, it comes at the cost that any implementation will need to be parsed according to the way it was implemented into a NoteMate <a href="@ref">`Note</a>`.</p></blockquote><h2 id="Targeting-Franklin.jl-as-an-Output-Target"><a class="docs-heading-anchor" href="#Targeting-Franklin.jl-as-an-Output-Target">Targeting Franklin.jl as an Output Target 🎯</a><a id="Targeting-Franklin.jl-as-an-Output-Target-1"></a><a class="docs-heading-anchor-permalink" href="#Targeting-Franklin.jl-as-an-Output-Target" title="Permalink"></a></h2><p>With the note parsed into an OKM <a href="../api/#NoteMate.Note"><code>Note</code></a> object, we can now use NoteMate tools to create a Franklin.jl compliant output.  We use <a href="../api/#NoteMate.create_franklin_note"><code>create_franklin_note()</code></a> to created a <a href="../api/#NoteMate.FranklinNote"><code>FranklinNote</code></a> object that is used by NoteMate and <a href="../api/#NoteMate.generate_franklin_template"><code>generate_franklin_template()</code></a> to generate the initial page set-up with necessary Franklin specific syntax mark-up:</p><pre><code class="language-julia hljs">franklin_note_raw = create_franklin_note(note)
+
+franklin_note = &quot;&quot;
+franklin_note = franklin_note * generate_franklin_template(title=franklin_note_raw.title, slug=franklin_note_raw.slug, tags=franklin_note_raw.tags, description=franklin_note_raw.description, rss_title=franklin_note_raw.rss_title, rss_description=franklin_note_raw.rss_description, rss_pubdate=franklin_note_raw.rss_pubdate)</code></pre><p>From here, NoteMate provides a variety of tools that accept a <code>FranklinNote</code> to generate content for a note written using Franklin markup.  Here is an example of how this is done: </p><pre><code class="language-julia hljs"># Generate summary section
+franklin_note = franklin_note * generate_note_summary(franklin_note_raw)
+
+# Generate bibliography section
+franklin_note = franklin_note * generate_bibliography(franklin_note_raw)
+
+# Generate a Franklin Table of Contents
+franklin_note = franklin_note * generate_table_of_contents()
+
+# Add note content into the Franklin page
+franklin_note = franklin_note * franklin_note_raw.notes
+
+# Generate a references output section
+franklin_note = franklin_note * generate_references(franklin_note_raw)
+
+# Write the final note to a file
+write(&quot;franklin_note.md&quot;, franklin_note)</code></pre><h2 id="Congratulations!-You-Just-Converted-Your-First-Note!"><a class="docs-heading-anchor" href="#Congratulations!-You-Just-Converted-Your-First-Note!">Congratulations! You Just Converted Your First Note! 🥳</a><a id="Congratulations!-You-Just-Converted-Your-First-Note!-1"></a><a class="docs-heading-anchor-permalink" href="#Congratulations!-You-Just-Converted-Your-First-Note!" title="Permalink"></a></h2><p>Congratulations!  This illustrates a potential workflow using NoteMate to go from OKM-compliant Markdown notes to a Franklin note! The final Franklin note then could be directly added to a Franklin-based website deployment and rendered on the internet. This example workflow shows a potential path one could take using NoteMate to ingest an OKM-compliant note and produce an output. Additional functionality could be added to a workflow to, for example, iterate through one&#39;s entire note base, add custom sections to a specific output one would want, or swap citation styles on the fly. With the scripting ability enabled by NoteMate to iteratively build notes, the possibilities are numerous.</p><h2 id="Appendix"><a class="docs-heading-anchor" href="#Appendix">Appendix 🔍</a><a id="Appendix-1"></a><a class="docs-heading-anchor-permalink" href="#Appendix" title="Permalink"></a></h2><h3 id="Sample-Note"><a class="docs-heading-anchor" href="#Sample-Note">Sample Note</a><a id="Sample-Note-1"></a><a class="docs-heading-anchor-permalink" href="#Sample-Note" title="Permalink"></a></h3><pre><code class="language-markdown hljs"># How Big Is a Chunk?
+
+**Date:** January 07 2023
+
+**Summary:** An interesting foundation for the notion of &quot;chunking&quot; in memory and education research
+
+**Keywords:** #chunk #memory #bit #unit ##bibliography #archive
+
+## Bibliography
+
+H. A. Simon, &quot;How Big Is a Chunk? By combining data from several experiments, a basic human memory unit can be identified and measured.,&quot; Science, vol. 183, no. 4124, pp. 482–488, 1974.
+
+## Notes
+
+### Reading Motivation
+
+In reading a piece by Michael Nielsen on using spaced repetition to process mathematics [@nielsenUsingSpacedRepetition2019], he referenced a concept called &quot;chunking&quot;.
+I hadn&#39;t encountered this notion in education research before and thought it sounded interesting. 
+So, thus reading the paper.
+
+### What Are Chunks?
+
+Loosely based on [@miller1956magical], chunks are constructs which organize and group together units of information input into memory.
+These inputs can be of any form and the basic units could be things like phonemes in words, moves in chess, etc. that can then be recalled at once (a Bible verse, a Sicilian Defense, etc.).
+The material stored in a chunk is independent of how many chunks can be generated.
+
+### Benefits of Chunk Generation
+
+The memory span seems to be constrained by a fixed number of chunks (although this number varies wildly in the paper). 
+However, we can increase the information stored in memory by increasing the number of units belonging to each chunk.
+[@miller1956magical]
+
+As regaled by Simon, an example of chunking in action is this:
+
+&gt; I tried to recall after one reading the following list of words: Lincoln, milky, criminal, differential, address, way, lawyer, calculus, Gettysburg. I had no success whatsoever. I should not have expected success, for the list exceeded my span of six or seven words. Then I rearranged the list a bit, as follows:
+&gt; 
+&gt; - Lincoln&#39;s Gettysburg Address
+&gt; - Milky Way 
+&gt; - Criminal Lawyer 
+&gt; - Differential Calculus
+&gt;
+&gt; I had no difficulty at all
+
+The variance between chunks and memory can be attributed to larger chunk sizes based on one&#39;s expertise with a material. [@chase1973mind, @simon1973american]
+
+## References:
+</code></pre><h3 id="IEEE-CSL"><a class="docs-heading-anchor" href="#IEEE-CSL">IEEE CSL</a><a id="IEEE-CSL-1"></a><a class="docs-heading-anchor-permalink" href="#IEEE-CSL" title="Permalink"></a></h3><pre><code class="language-text hljs">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;
+&lt;style xmlns=&quot;http://purl.org/net/xbiblio/csl&quot; class=&quot;in-text&quot; version=&quot;1.0&quot; demote-non-dropping-particle=&quot;sort-only&quot;&gt;
+  &lt;info&gt;
+    &lt;title&gt;IEEE&lt;/title&gt;
+    &lt;id&gt;http://www.zotero.org/styles/ieee&lt;/id&gt;
+    &lt;link href=&quot;http://www.zotero.org/styles/ieee&quot; rel=&quot;self&quot;/&gt;
+    &lt;!-- &lt;link href=&quot;https://ieeeauthorcenter.ieee.org/wp-content/uploads/IEEE-Reference-Guide.pdf&quot; rel=&quot;documentation&quot;/&gt; - 2018 guidelines --&gt;
+    &lt;link href=&quot;http://journals.ieeeauthorcenter.ieee.org/wp-content/uploads/sites/7/IEEE_Reference_Guide.pdf&quot; rel=&quot;documentation&quot;/&gt;
+    &lt;link href=&quot;https://journals.ieeeauthorcenter.ieee.org/your-role-in-article-production/ieee-editorial-style-manual/&quot; rel=&quot;documentation&quot;/&gt;
+    &lt;author&gt;
+      &lt;name&gt;Michael Berkowitz&lt;/name&gt;
+      &lt;email&gt;mberkowi@gmu.edu&lt;/email&gt;
+    &lt;/author&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Julian Onions&lt;/name&gt;
+      &lt;email&gt;julian.onions@gmail.com&lt;/email&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Rintze Zelle&lt;/name&gt;
+      &lt;uri&gt;http://twitter.com/rintzezelle&lt;/uri&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Stephen Frank&lt;/name&gt;
+      &lt;uri&gt;http://www.zotero.org/sfrank&lt;/uri&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Sebastian Karcher&lt;/name&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Giuseppe Silano&lt;/name&gt;
+      &lt;email&gt;g.silano89@gmail.com&lt;/email&gt;
+      &lt;uri&gt;http://giuseppesilano.net&lt;/uri&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Patrick O&#39;Brien&lt;/name&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Brenton M. Wiernik&lt;/name&gt;
+    &lt;/contributor&gt;
+    &lt;contributor&gt;
+      &lt;name&gt;Oliver Couch&lt;/name&gt;
+      &lt;email&gt;oliver.couch@gmail.com&lt;/email&gt;
+    &lt;/contributor&gt;
+    &lt;category citation-format=&quot;numeric&quot;/&gt;
+    &lt;category field=&quot;engineering&quot;/&gt;
+    &lt;category field=&quot;generic-base&quot;/&gt;
+    &lt;summary&gt;IEEE style as per the 2021 guidelines, V 01.29.2021.&lt;/summary&gt;
+    &lt;updated&gt;2023-04-18T00:52:46+10:00&lt;/updated&gt;
+    &lt;rights license=&quot;http://creativecommons.org/licenses/by-sa/3.0/&quot;&gt;This work is licensed under a Creative Commons Attribution-ShareAlike 3.0 License&lt;/rights&gt;
+  &lt;/info&gt;
+  &lt;locale xml:lang=&quot;en&quot;&gt;
+    &lt;date form=&quot;text&quot;&gt;
+      &lt;date-part name=&quot;month&quot; form=&quot;short&quot; suffix=&quot; &quot;/&gt;
+      &lt;date-part name=&quot;day&quot; form=&quot;numeric-leading-zeros&quot; suffix=&quot;, &quot;/&gt;
+      &lt;date-part name=&quot;year&quot;/&gt;
+    &lt;/date&gt;
+    &lt;terms&gt;
+      &lt;term name=&quot;chapter&quot; form=&quot;short&quot;&gt;ch.&lt;/term&gt;
+      &lt;term name=&quot;presented at&quot;&gt;presented at the&lt;/term&gt;
+      &lt;term name=&quot;available at&quot;&gt;available&lt;/term&gt;
+    &lt;/terms&gt;
+  &lt;/locale&gt;
+  &lt;!-- Macros --&gt;
+  &lt;macro name=&quot;status&quot;&gt;
+    &lt;choose&gt;
+      &lt;if variable=&quot;page issue volume&quot; match=&quot;none&quot;&gt;
+        &lt;text variable=&quot;status&quot; text-case=&quot;capitalize-first&quot; suffix=&quot;&quot; font-weight=&quot;bold&quot;/&gt;
+      &lt;/if&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;edition&quot;&gt;
+    &lt;choose&gt;
+      &lt;if type=&quot;bill book chapter graphic legal_case legislation motion_picture paper-conference report song&quot; match=&quot;any&quot;&gt;
+        &lt;choose&gt;
+          &lt;if is-numeric=&quot;edition&quot;&gt;
+            &lt;group delimiter=&quot; &quot;&gt;
+              &lt;number variable=&quot;edition&quot; form=&quot;ordinal&quot;/&gt;
+              &lt;text term=&quot;edition&quot; form=&quot;short&quot;/&gt;
+            &lt;/group&gt;
+          &lt;/if&gt;
+          &lt;else&gt;
+            &lt;text variable=&quot;edition&quot; text-case=&quot;capitalize-first&quot; suffix=&quot;.&quot;/&gt;
+          &lt;/else&gt;
+        &lt;/choose&gt;
+      &lt;/if&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;issued&quot;&gt;
+    &lt;choose&gt;
+      &lt;if type=&quot;article-journal report&quot; match=&quot;any&quot;&gt;
+        &lt;date variable=&quot;issued&quot;&gt;
+          &lt;date-part name=&quot;month&quot; form=&quot;short&quot; suffix=&quot; &quot;/&gt;
+          &lt;date-part name=&quot;year&quot; form=&quot;long&quot;/&gt;
+        &lt;/date&gt;
+      &lt;/if&gt;
+      &lt;else-if type=&quot;bill book chapter graphic legal_case legislation song thesis&quot; match=&quot;any&quot;&gt;
+        &lt;date variable=&quot;issued&quot;&gt;
+          &lt;date-part name=&quot;year&quot; form=&quot;long&quot;/&gt;
+        &lt;/date&gt;
+      &lt;/else-if&gt;
+      &lt;else-if type=&quot;paper-conference&quot; match=&quot;any&quot;&gt;
+        &lt;date variable=&quot;issued&quot;&gt;
+          &lt;date-part name=&quot;month&quot; form=&quot;short&quot;/&gt;
+          &lt;date-part name=&quot;year&quot; prefix=&quot; &quot;/&gt;
+        &lt;/date&gt;
+      &lt;/else-if&gt;
+      &lt;else-if type=&quot;motion_picture&quot; match=&quot;any&quot;&gt;
+        &lt;date variable=&quot;issued&quot; form=&quot;text&quot; prefix=&quot;(&quot; suffix=&quot;)&quot;/&gt;
+      &lt;/else-if&gt;
+      &lt;else&gt;
+        &lt;date variable=&quot;issued&quot; form=&quot;text&quot;/&gt;
+      &lt;/else&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;author&quot;&gt;
+    &lt;names variable=&quot;author&quot;&gt;
+      &lt;name and=&quot;text&quot; et-al-min=&quot;7&quot; et-al-use-first=&quot;1&quot; initialize-with=&quot;. &quot;/&gt;
+      &lt;label form=&quot;short&quot; prefix=&quot;, &quot; text-case=&quot;capitalize-first&quot;/&gt;
+      &lt;et-al font-style=&quot;italic&quot;/&gt;
+      &lt;substitute&gt;
+        &lt;names variable=&quot;editor&quot;/&gt;
+        &lt;names variable=&quot;translator&quot;/&gt;
+      &lt;/substitute&gt;
+    &lt;/names&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;editor&quot;&gt;
+    &lt;names variable=&quot;editor&quot;&gt;
+      &lt;name initialize-with=&quot;. &quot; delimiter=&quot;, &quot; and=&quot;text&quot;/&gt;
+      &lt;label form=&quot;short&quot; prefix=&quot;, &quot; text-case=&quot;capitalize-first&quot;/&gt;
+    &lt;/names&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;locators&quot;&gt;
+    &lt;group delimiter=&quot;, &quot;&gt;
+      &lt;text macro=&quot;edition&quot;/&gt;
+      &lt;group delimiter=&quot; &quot;&gt;
+        &lt;text term=&quot;volume&quot; form=&quot;short&quot;/&gt;
+        &lt;number variable=&quot;volume&quot; form=&quot;numeric&quot;/&gt;
+      &lt;/group&gt;
+      &lt;group delimiter=&quot; &quot;&gt;
+        &lt;number variable=&quot;number-of-volumes&quot; form=&quot;numeric&quot;/&gt;
+        &lt;text term=&quot;volume&quot; form=&quot;short&quot; plural=&quot;true&quot;/&gt;
+      &lt;/group&gt;
+      &lt;group delimiter=&quot; &quot;&gt;
+        &lt;text term=&quot;issue&quot; form=&quot;short&quot;/&gt;
+        &lt;number variable=&quot;issue&quot; form=&quot;numeric&quot;/&gt;
+      &lt;/group&gt;
+    &lt;/group&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;title&quot;&gt;
+    &lt;choose&gt;
+      &lt;if type=&quot;bill book graphic legal_case legislation motion_picture song&quot; match=&quot;any&quot;&gt;
+        &lt;text variable=&quot;title&quot; font-style=&quot;italic&quot;/&gt;
+      &lt;/if&gt;
+      &lt;else&gt;
+        &lt;text variable=&quot;title&quot; quotes=&quot;true&quot;/&gt;
+      &lt;/else&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;publisher&quot;&gt;
+    &lt;choose&gt;
+      &lt;if type=&quot;bill book chapter graphic legal_case legislation motion_picture paper-conference song&quot; match=&quot;any&quot;&gt;
+        &lt;group delimiter=&quot;: &quot;&gt;
+          &lt;text variable=&quot;publisher-place&quot;/&gt;
+          &lt;text variable=&quot;publisher&quot;/&gt;
+        &lt;/group&gt;
+      &lt;/if&gt;
+      &lt;else&gt;
+        &lt;group delimiter=&quot;, &quot;&gt;
+          &lt;text variable=&quot;publisher&quot;/&gt;
+          &lt;text variable=&quot;publisher-place&quot;/&gt;
+        &lt;/group&gt;
+      &lt;/else&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;event&quot;&gt;
+    &lt;choose&gt;
+      &lt;!-- Published Conference Paper --&gt;
+      &lt;if type=&quot;paper-conference speech&quot; match=&quot;any&quot;&gt;
+        &lt;choose&gt;
+          &lt;if variable=&quot;container-title&quot; match=&quot;any&quot;&gt;
+            &lt;group delimiter=&quot; &quot;&gt;
+              &lt;text term=&quot;in&quot;/&gt;
+              &lt;text variable=&quot;container-title&quot; font-style=&quot;italic&quot;/&gt;
+            &lt;/group&gt;
+          &lt;/if&gt;
+          &lt;!-- Unpublished Conference Paper --&gt;
+          &lt;else&gt;
+            &lt;group delimiter=&quot; &quot;&gt;
+              &lt;text term=&quot;presented at&quot;/&gt;
+              &lt;text variable=&quot;event&quot;/&gt;
+            &lt;/group&gt;
+          &lt;/else&gt;
+        &lt;/choose&gt;
+      &lt;/if&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;access&quot;&gt;
+    &lt;choose&gt;
+      &lt;if type=&quot;webpage post post-weblog&quot; match=&quot;any&quot;&gt;
+        &lt;!-- https://url.com/ (accessed Mon. DD, YYYY). --&gt;
+        &lt;choose&gt;
+          &lt;if variable=&quot;URL&quot;&gt;
+            &lt;group prefix=&quot; &quot; delimiter=&quot; &quot;&gt;
+              &lt;text variable=&quot;URL&quot;/&gt;
+              &lt;group delimiter=&quot; &quot; prefix=&quot;(&quot; suffix=&quot;).&quot;&gt;
+                &lt;text term=&quot;accessed&quot;/&gt;
+                &lt;date variable=&quot;accessed&quot; form=&quot;text&quot;/&gt;
+              &lt;/group&gt;
+            &lt;/group&gt;
+          &lt;/if&gt;
+        &lt;/choose&gt;
+      &lt;/if&gt;
+      &lt;else-if match=&quot;any&quot; variable=&quot;DOI&quot;&gt;
+        &lt;!-- doi: 10.1000/xyz123. --&gt;
+        &lt;text variable=&quot;DOI&quot; prefix=&quot; doi: &quot; suffix=&quot;.&quot;/&gt;
+      &lt;/else-if&gt;
+      &lt;else-if variable=&quot;URL&quot;&gt;
+        &lt;!-- Accessed: Mon. DD, YYYY. [Medium]. Available: https://URL.com/ --&gt;
+        &lt;group delimiter=&quot;. &quot; prefix=&quot; &quot; suffix=&quot;. &quot;&gt;
+          &lt;!-- Accessed: Mon. DD, YYYY. --&gt;
+          &lt;group delimiter=&quot;: &quot;&gt;
+            &lt;text term=&quot;accessed&quot; text-case=&quot;capitalize-first&quot;/&gt;
+            &lt;date variable=&quot;accessed&quot; form=&quot;text&quot;/&gt;
+          &lt;/group&gt;
+          &lt;!-- [Online Video]. --&gt;
+          &lt;group prefix=&quot;[&quot; suffix=&quot;]&quot; delimiter=&quot; &quot;&gt;
+            &lt;choose&gt;
+              &lt;if variable=&quot;medium&quot; match=&quot;any&quot;&gt;
+                &lt;text variable=&quot;medium&quot; text-case=&quot;capitalize-first&quot;/&gt;
+              &lt;/if&gt;
+              &lt;else&gt;
+                &lt;text term=&quot;online&quot; text-case=&quot;capitalize-first&quot;/&gt;
+                &lt;choose&gt;
+                  &lt;if type=&quot;motion_picture&quot;&gt;
+                    &lt;text term=&quot;video&quot; text-case=&quot;capitalize-first&quot;/&gt;
+                  &lt;/if&gt;
+                &lt;/choose&gt;
+              &lt;/else&gt;
+            &lt;/choose&gt;
+          &lt;/group&gt;
+        &lt;/group&gt;
+        &lt;!-- Available: https://URL.com/ --&gt;
+        &lt;group delimiter=&quot;: &quot; prefix=&quot; &quot;&gt;
+          &lt;text term=&quot;available at&quot; text-case=&quot;capitalize-first&quot;/&gt;
+          &lt;text variable=&quot;URL&quot;/&gt;
+        &lt;/group&gt;
+      &lt;/else-if&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;page&quot;&gt;
+    &lt;choose&gt;
+      &lt;if type=&quot;article-journal&quot; variable=&quot;number&quot; match=&quot;all&quot;&gt;
+        &lt;group delimiter=&quot; &quot;&gt;
+          &lt;text value=&quot;Art.&quot;/&gt;
+          &lt;text term=&quot;issue&quot; form=&quot;short&quot;/&gt;
+          &lt;text variable=&quot;number&quot;/&gt;
+        &lt;/group&gt;
+      &lt;/if&gt;
+      &lt;else&gt;
+        &lt;group delimiter=&quot; &quot;&gt;
+          &lt;label variable=&quot;page&quot; form=&quot;short&quot;/&gt;
+          &lt;text variable=&quot;page&quot;/&gt;
+        &lt;/group&gt;
+      &lt;/else&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;citation-locator&quot;&gt;
+    &lt;group delimiter=&quot; &quot;&gt;
+      &lt;choose&gt;
+        &lt;if locator=&quot;page&quot;&gt;
+          &lt;label variable=&quot;locator&quot; form=&quot;short&quot;/&gt;
+        &lt;/if&gt;
+        &lt;else&gt;
+          &lt;label variable=&quot;locator&quot; form=&quot;short&quot; text-case=&quot;capitalize-first&quot;/&gt;
+        &lt;/else&gt;
+      &lt;/choose&gt;
+      &lt;text variable=&quot;locator&quot;/&gt;
+    &lt;/group&gt;
+  &lt;/macro&gt;
+  &lt;macro name=&quot;geographic-location&quot;&gt;
+    &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+      &lt;choose&gt;
+        &lt;if variable=&quot;publisher-place&quot;&gt;
+          &lt;text variable=&quot;publisher-place&quot; text-case=&quot;title&quot;/&gt;
+        &lt;/if&gt;
+        &lt;else-if variable=&quot;event-place&quot;&gt;
+          &lt;text variable=&quot;event-place&quot; text-case=&quot;title&quot;/&gt;
+        &lt;/else-if&gt;
+      &lt;/choose&gt;
+    &lt;/group&gt;
+  &lt;/macro&gt;
+  &lt;!-- Series --&gt;
+  &lt;macro name=&quot;collection&quot;&gt;
+    &lt;choose&gt;
+      &lt;if variable=&quot;collection-title&quot; match=&quot;any&quot;&gt;
+        &lt;text term=&quot;in&quot; suffix=&quot; &quot;/&gt;
+        &lt;group delimiter=&quot;, &quot; suffix=&quot;. &quot;&gt;
+          &lt;text variable=&quot;collection-title&quot;/&gt;
+          &lt;text variable=&quot;collection-number&quot; prefix=&quot;no. &quot;/&gt;
+          &lt;text variable=&quot;volume&quot; prefix=&quot;vol. &quot;/&gt;
+        &lt;/group&gt;
+      &lt;/if&gt;
+    &lt;/choose&gt;
+  &lt;/macro&gt;
+  &lt;!-- Citation --&gt;
+  &lt;citation collapse=&quot;citation-number&quot;&gt;
+    &lt;sort&gt;
+      &lt;key variable=&quot;citation-number&quot;/&gt;
+    &lt;/sort&gt;
+    &lt;layout delimiter=&quot;, &quot;&gt;
+      &lt;group prefix=&quot;[&quot; suffix=&quot;]&quot; delimiter=&quot;, &quot;&gt;
+        &lt;text variable=&quot;citation-number&quot;/&gt;
+        &lt;text macro=&quot;citation-locator&quot;/&gt;
+      &lt;/group&gt;
+    &lt;/layout&gt;
+  &lt;/citation&gt;
+  &lt;!-- Bibliography --&gt;
+  &lt;bibliography entry-spacing=&quot;0&quot; second-field-align=&quot;flush&quot;&gt;
+    &lt;layout&gt;
+      &lt;!-- Citation Number --&gt;
+      &lt;text variable=&quot;citation-number&quot; prefix=&quot;[&quot; suffix=&quot;]&quot;/&gt;
+      &lt;!-- Author(s) --&gt;
+      &lt;text macro=&quot;author&quot; suffix=&quot;, &quot;/&gt;
+      &lt;!-- Rest of Citation --&gt;
+      &lt;choose&gt;
+        &lt;!-- Specific Formats --&gt;
+        &lt;if type=&quot;article-journal&quot;&gt;
+          &lt;group delimiter=&quot;, &quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text variable=&quot;container-title&quot; font-style=&quot;italic&quot; form=&quot;short&quot;/&gt;
+            &lt;text macro=&quot;locators&quot;/&gt;
+            &lt;text macro=&quot;page&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+            &lt;text macro=&quot;status&quot;/&gt;
+          &lt;/group&gt;
+          &lt;choose&gt;
+            &lt;if variable=&quot;URL DOI&quot; match=&quot;none&quot;&gt;
+              &lt;text value=&quot;.&quot;/&gt;
+            &lt;/if&gt;
+            &lt;else&gt;
+              &lt;text value=&quot;,&quot;/&gt;
+            &lt;/else&gt;
+          &lt;/choose&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/if&gt;
+        &lt;else-if type=&quot;paper-conference speech&quot; match=&quot;any&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;, &quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text macro=&quot;event&quot;/&gt;
+            &lt;text macro=&quot;editor&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;collection&quot;/&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+            &lt;text macro=&quot;page&quot;/&gt;
+            &lt;text macro=&quot;status&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else-if type=&quot;chapter&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;, &quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;group delimiter=&quot; &quot;&gt;
+              &lt;text term=&quot;in&quot; suffix=&quot; &quot;/&gt;
+              &lt;text variable=&quot;container-title&quot; font-style=&quot;italic&quot;/&gt;
+            &lt;/group&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;editor&quot; suffix=&quot;, &quot;/&gt;
+          &lt;text macro=&quot;edition&quot;/&gt;
+          &lt;text macro=&quot;collection&quot;/&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+            &lt;text macro=&quot;page&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else-if type=&quot;report&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;group delimiter=&quot; &quot;&gt;
+              &lt;text variable=&quot;genre&quot;/&gt;
+              &lt;text variable=&quot;number&quot;/&gt;
+            &lt;/group&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else-if type=&quot;thesis&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text variable=&quot;genre&quot;/&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else-if type=&quot;webpage post-weblog post&quot; match=&quot;any&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text variable=&quot;container-title&quot; font-style=&quot;italic&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else-if type=&quot;patent&quot;&gt;
+          &lt;group delimiter=&quot;, &quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text variable=&quot;number&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;!-- Online Video --&gt;
+        &lt;else-if type=&quot;motion_picture&quot;&gt;
+          &lt;text macro=&quot;geographic-location&quot; suffix=&quot;. &quot;/&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;!-- Generic/Fallback Formats --&gt;
+        &lt;else-if type=&quot;bill book graphic legal_case legislation report song&quot; match=&quot;any&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;. &quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text macro=&quot;locators&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;collection&quot;/&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+            &lt;text macro=&quot;page&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else-if type=&quot;article-magazine article-newspaper broadcast interview manuscript map patent personal_communication song speech thesis webpage&quot; match=&quot;any&quot;&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text variable=&quot;container-title&quot; font-style=&quot;italic&quot;/&gt;
+            &lt;text macro=&quot;locators&quot;/&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;text macro=&quot;page&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else-if&gt;
+        &lt;else&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;. &quot;&gt;
+            &lt;text macro=&quot;title&quot;/&gt;
+            &lt;text variable=&quot;container-title&quot; font-style=&quot;italic&quot;/&gt;
+            &lt;text macro=&quot;locators&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;collection&quot;/&gt;
+          &lt;group delimiter=&quot;, &quot; suffix=&quot;.&quot;&gt;
+            &lt;text macro=&quot;publisher&quot;/&gt;
+            &lt;text macro=&quot;page&quot;/&gt;
+            &lt;text macro=&quot;issued&quot;/&gt;
+          &lt;/group&gt;
+          &lt;text macro=&quot;access&quot;/&gt;
+        &lt;/else&gt;
+      &lt;/choose&gt;
+    &lt;/layout&gt;
+  &lt;/bibliography&gt;
+&lt;/style&gt;
+</code></pre><h3 id="BibTeX-References"><a class="docs-heading-anchor" href="#BibTeX-References">BibTeX References</a><a id="BibTeX-References-1"></a><a class="docs-heading-anchor-permalink" href="#BibTeX-References" title="Permalink"></a></h3><pre><code class="language-latex hljs">@online{nielsenUsingSpacedRepetition2019,
+  title = {Using Spaced Repetition Systems to See through a Piece of Mathematics},
+  author = {Nielsen, Michael},
+  date = {2019},
+  url = {http://cognitivemedium.com/srs-mathematics}
+}
+
+@article{miller1956magical,
+  title = {The Magical Number Seven, plus or Minus Two: {{Some}} Limits on Our Capacity for Processing Information.},
+  author = {Miller, George A},
+  date = {1956},
+  journaltitle = {Psychological review},
+  shortjournal = {Psychol. Rev.},
+  volume = {63},
+  number = {2},
+  pages = {81},
+  publisher = {{American Psychological Association}}
+}
+
+@incollection{chase1973mind,
+  title = {The Mind&#39;s Eye in Chess},
+  booktitle = {Visual Information Processing},
+  author = {Chase, William G and Simon, Herbert A},
+  date = {1973},
+  pages = {215--281},
+  publisher = {{Elsevier}}
+}
+
+@article{simon1973american,
+  title = {American Scientist},
+  author = {Simon, Herbert A and Chase, William G},
+  date = {1973},
+  journaltitle = {Scientist (Philadelphia, Pa.)},
+  shortjournal = {Scientist},
+  volume = {61},
+  number = {4},
+  pages = {394--403}
+}
+</code></pre><h3 id="Full-Script"><a class="docs-heading-anchor" href="#Full-Script">Full Script</a><a id="Full-Script-1"></a><a class="docs-heading-anchor-permalink" href="#Full-Script" title="Permalink"></a></h3><p>Here was the full script that was developed in the course of this tutorial:</p><pre><code class="language-julia hljs">using Dates
+using NoteMate
+
+import Markdown:
+    Header,
+    plain
+
+note = read(&quot;note.md&quot;, String)
+
+citation_keys = find_citation_groups(note) 
+inline_citations_dict = create_inline_citations(citation_keys, &quot;refs.bib&quot;, &quot;ieee.csl&quot;)
+note = replace(note, inline_citations_dict...)
+
+markdown_links = find_markdown_links(note, group_links = true)
+relative_links_dict = create_relative_links(markdown_links[&quot;relative_links&quot;])
+note = replace(note, relative_links_dict...)
+
+parsed_note = Markdown.parse(note)
+
+note_headers = get_headers(parsed_note.content)
+title_header = filter(x -&gt; typeof(x) &lt;: Header{1}, note_headers)
+section_headers = filter(x -&gt; typeof(x) &lt;: Header{2}, note_headers)
+
+sections = get_sections(parsed_note.content, section_headers; name_sections=true)
+title_section = get_title_section(parsed_note.content, title_header; name_sections=true)
+references_section = create_references(citation_keys, &quot;refs.bib&quot;, &quot;ieee.csl&quot;)
+note_sections = merge!(sections, title_section)
+note_sections[&quot;References&quot;] = (note_sections[&quot;References&quot;][1] |&gt; plain) * &quot;\n&quot; * references_section |&gt; Markdown.parse |&gt; x -&gt; x.content
+
+title_section = note_sections[&quot;Title&quot;]
+bibliography_section = note_sections[&quot;Bibliography&quot;][2] |&gt; plain
+notes_section = note_sections[&quot;Notes&quot;][2:end] |&gt; plain
+references_section = note_sections[&quot;References&quot;] |&gt; plain
+
+title = title_section[1].text[1] |&gt; x -&gt; replace(x, &quot;\&quot;&quot; =&gt; &quot;&#39;&quot;)
+date = title_section[2].content[2] |&gt; strip
+summary = title_section[3].content[2] |&gt; strip |&gt; x -&gt; replace(x, &quot;\&quot;&quot; =&gt; &quot;&#39;&quot;)
+keywords = title_section[4].content[2] |&gt; strip
+
+note = Note(title, date, summary, keywords, bibliography_section, references_section, notes_section, basename(&quot;notes.md&quot;), &quot;notes.md&quot;, &quot;ieee.csl&quot;, &quot;refs.bib&quot;)
+
+franklin_note_raw = create_franklin_note(note)
+
+franklin_note = &quot;&quot;
+franklin_note = franklin_note * generate_franklin_template(title=franklin_note_raw.title, slug=franklin_note_raw.slug, tags=franklin_note_raw.tags, description=franklin_note_raw.description, rss_title=franklin_note_raw.rss_title, rss_description=franklin_note_raw.rss_description, rss_pubdate=franklin_note_raw.rss_pubdate)
+
+franklin_note = franklin_note * generate_note_summary(franklin_note_raw)
+franklin_note = franklin_note * generate_bibliography(franklin_note_raw)
+franklin_note = franklin_note * generate_table_of_contents()
+franklin_note = franklin_note * franklin_note_raw.notes
+franklin_note = franklin_note * generate_references(franklin_note_raw)
+
+write(&quot;franklin_note.md&quot;, franklin_note)
+</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../api/">« API Reference</a><div class="flexbox-break"></div><p class="footer-message">Created by <a href="https://jacobzelko.com">Jacob Zelko</a>. <a href="https://github.com/TheCedarPrince/NoteMate/blob/main/LICENSE">License</a></p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Thursday 31 August 2023 03:38">Thursday 31 August 2023</span>. Using Julia version 1.7.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
