@@ -1,12 +1,16 @@
 module NoteMate
 
 import Dates:
+    @dateformat_str,
     DateFormat,
     DateTime,
     Date,
+    Day,
     day,
-    year,
+    format,
+    now, 
     monthname,
+    year,
     yearmonthday
 import Markdown:
     plain,
@@ -57,5 +61,6 @@ end
 include("structs.jl")
 include("markdown/parser.jl")
 include("targets/franklin.jl")
+include("newsletter/utils.jl")
 
 end
