@@ -1,4 +1,11 @@
-# Welcome to the `NoteMate.jl` Docs! 👋
+# Welcome to `NoteMate.jl`! 📝
+
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jacobzelko.com/NoteMate/dev/)
+[![Test Coverage](https://codecov.io/gh/TheCedarPrince/NoteMate/branch/main/graph/badge.svg)](https://app.codecov.io/gh/TheCedarPrince/NoteMate)
+[![Build Status](https://github.com/TheCedarPrince/NoteMate/workflows/CI/badge.svg)](https://github.com/TheCedarPrince/NoteMate/actions)
+[![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
+
+<!--TODO: Add Zulip reference-->
 
 > The perfect companion for working with your notes 📚
 
@@ -6,6 +13,14 @@
 The goal of `NoteMate.jl` is to enable one to focus only on writing without worry of needing to add any special markup to your note *while* having the benefits of quickly sharing thoughts.
 In fact, sharing your thoughts, whether locally or on the internet, is never far away as `NoteMate.jl` provides tools to enable your thoughts to be published on [digital gardens](https://www.lekoarts.de/garden/what-is-a-digital-garden).
 Finally, due to the way `NoteMate.jl` parses documents, `NoteMate.jl` can transform notes following the OKM and express them in different outputs irrespective of the implementation.
+
+# Installation
+
+To install `NoteMate.jl` currently, one needs to run the following command in their Julia REPL:
+
+```
+pkg> add NoteMate
+```
 
 # Current Capabilities
 
@@ -31,25 +46,10 @@ Here are some websites that use `NoteMate.jl` to manage their website
 
 - [TheCedarPrince's Personal Website](https://jacobzelko.com) - a [Franklin.jl](https://franklinjl.org)-based website that hosts a blog, note archive, and their research endeavors.
 
-# Installation
+# Contributors
 
-To install `NoteMate.jl` currently, one needs to run the following command in their Julia REPL:
+`NoteMate.jl` would not be possible if not for the help and support from our contributors here: 
 
-```
-pkg> add https://github.com/TheCedarPrince/NoteMate
-```
-
-<!--TODO: Add final instructions before first release! -->
-
-# Long Term Vision for NoteMate.jl
-
-`NoteMate.jl` helps with constructing [digital gardens](https://www.lekoarts.de/garden/what-is-a-digital-garden) for sharing of ideas, insights and information syntheses quickly.
-This makes it a good choice for building digital gardens that can be grown with a high-quality, low-tech evidence chain. 
-Since `NoteMate.jl` follows a modular standard, we think it can be expanded to allow ingestion and translation between many different file formats with different inner-file structures in a bidirectional manner.
-As an example, pages in a digital garden may even be able to coalesce multiple notes using the ontology of a note system into aggregate notes in the future. 
-
-Since `NoteMate.jl` enforces a common document format with certain information always present, sufficient standardization is present to consider having digital gardens interlink on the web.
-Different webpages might reference one another in such ways that they can build off each other, letting people seamlessly jump between different people's ideas and then incorporate them into their own. 
-Using the approaches here within `NoteMate.jl`, users may eventually be able to also quickly analyze and understand their own knowledge base data that they can leverage to build on other connections across other knowledge bases or in the context of their own work and research.
-
-<!--TODO: Add a philosophy section on the approach NoteMate takes-->
+|       |       |       |       |
+| :---: | :---: | :---: | :---: |
+| <img width="50" src="https://avatars2.githubusercontent.com/u/74614227?s=96&v=4"/></br>[SevorisDoe](https://github.com/SevorisDoe) |  |  |  |

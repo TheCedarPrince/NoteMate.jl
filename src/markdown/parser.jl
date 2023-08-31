@@ -130,10 +130,37 @@ function create_relative_links(link_strings; prefix = "")
     return Dict(link_strings .=> revised_links)
 end
 
+"""
+    get_headers()
+
+Finds all the MarkDown headers in a file's parse tree. 
+
+# Arguments
+- `contents`: The `Vector` of content structs of a MD struct from Julia standard library `Markdown.parse`
+
+# Returns
+The vector of all headers in the parsed Markdown document
+"""
 function get_headers(contents)
     filter(x -> typeof(x) <: Header, contents)
 end
 
+"""
+    get_sections
+
+Separate a whole parsed Markdown document into blocks of the text between headers. 
+
+# Arguments
+- `contents`: The `Vector` of content structs of a MD struct from Julia standard library `Markdown.parse`
+- `headers`: Vector of `Header` structs that are found in the submitted document 
+
+# Keyword Arguments
+- `name_sections = true`: boolean setting to get a dictionary instead of a vector.
+
+# Returns
+- By default, a dictionary of the headers first word as key and the sections between the headers 
+- A Vector of all section texts between the headers of the document 
+"""
 function get_sections(contents, headers; name_sections = true)
     sections = []
     section_names = []
@@ -161,6 +188,23 @@ function get_sections(contents, headers; name_sections = true)
     end
 end
 
+"""
+    get_title_section
+
+Get the sections that sit underneath title headers. 
+
+# Arguments
+- `contents`: The `Vector` of content structs of a MD struct from Julia standard library `Markdown.parse`
+- `title_headers`: Vector of `Header` structs that are considered title headers
+
+# Keyword Arguments
+- `name_sections = true`: boolean setting to get a dictionary instead of a vector.
+
+# Returns
+- By default, a dictionary of the title section under the "Title" key 
+- A Vector of all section texts started by title headers  
+
+"""
 function get_title_section(contents, title_header; name_sections = true)
     sections = []
     section_names = []
