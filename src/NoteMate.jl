@@ -1,7 +1,5 @@
 module NoteMate
 
-using CSV
-using DataFrames
 import Dates:
     DateFormat,
     DateTime,
