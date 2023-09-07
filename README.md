@@ -1,7 +1,7 @@
 # Welcome to `NoteMate.jl`! 📝
 
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://jacobzelko.com/NoteMate.jl/dev/)
-[![Test Coverage](https://codecov.io/gh/TheCedarPrince/NoteMate.jl/branch/main/graph/badge.svg)](https://app.codecov.io/gh/TheCedarPrince/NoteMate.jl)
+[![Test Coverage](https://codecov.io/gh/TheCedarPrince/NoteMate/branch/main/graph/badge.svg)](https://app.codecov.io/gh/TheCedarPrince/NoteMate)
 [![Build Status](https://github.com/TheCedarPrince/NoteMate.jl/workflows/CI/badge.svg)](https://github.com/TheCedarPrince/NoteMate.jl/actions)
 [![Code Style: Blue](https://img.shields.io/badge/code%20style-blue-4495d1.svg)](https://github.com/invenia/BlueStyle)
 
